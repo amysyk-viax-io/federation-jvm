@@ -13,6 +13,25 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 final class SchemaUtils {
 
+    private final static String DIRECTIVES_EXCLUDE = "\"Directs the executor to include this field or fragment only when the `if` argument is true\"\n" +
+            "directive @include(\n" +
+            "    \"Included when true.\"\n" +
+            "    if: Boolean!\n" +
+            "  ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT\n" +
+            "\n" +
+            "\"Directs the executor to skip this field or fragment when the `if`'argument is true.\"\n" +
+            "directive @skip(\n" +
+            "    \"Skipped when true.\"\n" +
+            "    if: Boolean!\n" +
+            "  ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT\n" +
+            "\n" +
+            "\"Marks the field or enum value as deprecated\"\n" +
+            "directive @deprecated(\n" +
+            "    \"The reason for the deprecation\"\n" +
+            "    reason: String = \"No longer supported\"\n" +
+            "  ) on FIELD_DEFINITION | ENUM_VALUE\n" +
+            "\n";
+
     private SchemaUtils() {
     }
 
@@ -32,6 +51,10 @@ final class SchemaUtils {
         @SuppressWarnings("unchecked") final Map<String, Object> _service = (Map<String, Object>) data.get("_service");
         assertNotNull(_service);
         final String sdl = (String) _service.get("sdl");
-        assertEquals(expected.trim(), sdl.trim());
+        assertEquals(expected.trim(), removeBuiltInDirectives(sdl).replaceAll("\n\n\n", "\n").trim());
+    }
+
+    static String removeBuiltInDirectives(String sdl) {
+        return sdl.replace(DIRECTIVES_EXCLUDE, "");
     }
 }
